@@ -119,8 +119,9 @@ These are stored in `apt-settings` under the key `cntScores` and editable in the
 
 ## Apartment Comparison Screen
 - Always compares exactly two apartments (selected by checkbox)
-- Side-by-side view with image, scores, and parameter rows
-- Photo comparison section below the two columns with buttons: מטבח, סלון ומרפסת, חדר
+- Desktop: side-by-side column cards with image, scores, and parameter rows
+- Mobile (≤560px): compact table layout — header row with apartment names, then one row per parameter showing the label on the right and both scores side by side
+- Photo comparison section below with buttons: מטבח, סלון ומרפסת, חדר
 - Clicking a photo-compare button opens a modal with side-by-side photos tagged to that room parameter for each apartment, plus the score for that parameter
 
 ## Settings Screen

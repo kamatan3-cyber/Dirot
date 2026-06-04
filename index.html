@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dirot</title>
-  <link rel="icon" type="image/png" href="dirot logo.png" />
+  <link rel="icon" type="image/png" href="Dirot2.png" />
   <script>if(localStorage.getItem('dark-mode')==='true')document.documentElement.classList.add('dark');</script>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700&family=Heebo:wght@700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -222,7 +222,7 @@
 
     @media (max-width: 480px) {
       .app-header { padding-top: 0; padding-bottom: 0; padding-right: 16px; padding-left: 16px; height: 64px; }
-      .app-logo { height: 30px; }
+      .app-logo { height: 32px; flex-shrink: 0; }
     }
 
     /* ── Home ── */
@@ -716,7 +716,71 @@
     }
 
     .compare-view { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
-    @media (max-width: 560px) { .compare-view { grid-template-columns: 1fr; } }
+
+    .compare-mobile-table {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-top: 22px;
+    }
+    @media (max-width: 560px) {
+      .compare-desktop-grid { display: none; }
+      .compare-mobile-table { display: block; }
+    }
+    .cmt-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      padding: 16px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      gap: 6px;
+    }
+    .cmt-row:last-child { border-bottom: none; }
+    .cmt-header {
+      background: var(--bg);
+      border-bottom: 2px solid var(--border);
+    }
+    .cmt-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      line-height: 1.4;
+    }
+    .cmt-val {
+      font-size: 15px;
+      font-weight: 700;
+      font-family: var(--font-heading);
+      text-align: center;
+      color: var(--text);
+    }
+    .cmt-large { font-size: 22px; letter-spacing: -0.5px; }
+    .cmt-apt-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+    }
+    .cmt-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .cmt-apt-name-text {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: center;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
     .compare-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .compare-col-img { width: 100%; height: 160px; object-fit: cover; display: block; }
@@ -1095,15 +1159,25 @@
     return (
       <header className="app-header">
         <div className="header-brand">
-          <img src="dirot logo.png" className="app-logo" alt="Dirot"
+          <img src="Dirot2.png" className="app-logo" alt="Dirot"
             onError={e => { e.target.style.display = 'none'; }}
             onClick={onHome} />
           {title && <span className="page-title">{title}</span>}
         </div>
         <div className="header-nav">
-          <button className="icon-btn" onClick={toggle} title={dark ? 'מצב יום' : 'מצב לילה'}
-            style={{ fontSize: 15 }}>
-            {dark ? '☀' : '☾'}
+          <button className="icon-btn" onClick={toggle} title={dark ? 'מצב יום' : 'מצב לילה'}>
+            {dark
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="5"/>
+                  <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            }
           </button>
           {onAdd && (
             <button className="icon-btn plus" onClick={onAdd} title="הוסף דירה">+</button>
@@ -2194,14 +2268,55 @@
         );
       }
 
+      function CompareMobileTable() {
+        const cs = cntScores || DEFAULT_CNT_SCORES;
+        const cntA = cs[aptA.roommatesCount] ?? 3;
+        const cntB = cs[aptB.roommatesCount] ?? 3;
+        const showPrice = aptA.price > 0 || aptB.price > 0;
+        const rows = [
+          { label: 'ציון סופי',      a: scoreA.toFixed(2),              b: scoreB.toFixed(2),              aClass: scoreClass(scoreA),                                                     bClass: scoreClass(scoreB),                                                     large: true },
+          { label: 'ערך לכסף',       a: vfmA.toFixed(2),                b: vfmB.toFixed(2),                aClass: scoreClass(vfmA),                                                       bClass: scoreClass(vfmB) },
+          ...(showPrice ? [{ label: 'מחיר', a: aptA.price > 0 ? fmtPrice(aptA.price) : '–', b: aptB.price > 0 ? fmtPrice(aptB.price) : '–', aClass: aptA.price > 0 && (aptB.price <= 0 || aptA.price < aptB.price) ? 'score-green' : '', bClass: aptB.price > 0 && (aptA.price <= 0 || aptB.price < aptA.price) ? 'score-green' : '' }] : []),
+          { label: 'חדר',            a: (aptA.room||0)+'/5',            b: (aptB.room||0)+'/5',            aClass: (aptA.room||0)>(aptB.room||0)?'score-green':'',            bClass: (aptB.room||0)>(aptA.room||0)?'score-green':'' },
+          { label: 'סלון + מרפסת',   a: (aptA.living||0)+'/5',          b: (aptB.living||0)+'/5',          aClass: (aptA.living||0)>(aptB.living||0)?'score-green':'',          bClass: (aptB.living||0)>(aptA.living||0)?'score-green':'' },
+          { label: 'מטבח',           a: (aptA.kitchen||0)+'/5',         b: (aptB.kitchen||0)+'/5',         aClass: (aptA.kitchen||0)>(aptB.kitchen||0)?'score-green':'',         bClass: (aptB.kitchen||0)>(aptA.kitchen||0)?'score-green':'' },
+          { label: 'מיקום',          a: (aptA.location||0)+'/5',        b: (aptB.location||0)+'/5',        aClass: (aptA.location||0)>(aptB.location||0)?'score-green':'',        bClass: (aptB.location||0)>(aptA.location||0)?'score-green':'' },
+          { label: 'איכות דיירים',   a: (aptA.roommatesQuality||0)+'/5',b: (aptB.roommatesQuality||0)+'/5',aClass: (aptA.roommatesQuality||0)>(aptB.roommatesQuality||0)?'score-green':'',bClass: (aptB.roommatesQuality||0)>(aptA.roommatesQuality||0)?'score-green':'' },
+          { label: 'מספר דיירים',    a: String(aptA.roommatesCount),    b: String(aptB.roommatesCount),    aClass: cntA>cntB?'score-green':'',                                             bClass: cntB>cntA?'score-green':'' },
+        ];
+        return (
+          <div className="compare-mobile-table">
+            <div className="cmt-row cmt-header">
+              <div className="cmt-label" />
+              <div className="cmt-apt-header">
+                {aptA.images?.length > 0 && <img src={aptA.images[aptA.profIdx||0]} alt="" className="cmt-thumb" />}
+                <span className="cmt-apt-name-text">{aptA.name || fullAddress(aptA)}</span>
+              </div>
+              <div className="cmt-apt-header">
+                {aptB.images?.length > 0 && <img src={aptB.images[aptB.profIdx||0]} alt="" className="cmt-thumb" />}
+                <span className="cmt-apt-name-text">{aptB.name || fullAddress(aptB)}</span>
+              </div>
+            </div>
+            {rows.map(({ label, a, b, aClass, bClass, large }) => (
+              <div key={label} className="cmt-row">
+                <div className="cmt-label">{label}</div>
+                <div className={'cmt-val' + (large?' cmt-large':'') + (aClass?' '+aClass:'')}>{a}</div>
+                <div className={'cmt-val' + (large?' cmt-large':'') + (bClass?' '+bClass:'')}>{b}</div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
       return (
         <div key={navKey + '-cv'} className={'app slide-forward'}>
           <AppHeader title="השוואת דירות" onBack={() => setCompareView(false)} onHome={() => nav('home', 'back')} />
           <div className="compare-screen screen">
-            <div className="compare-view">
+            <div className="compare-view compare-desktop-grid">
               <CCol apt={aptA} score={scoreA} vfm={vfmA} other={aptB} />
               <CCol apt={aptB} score={scoreB} vfm={vfmB} other={aptA} />
             </div>
+            <CompareMobileTable />
 
             <div className="photo-compare-section">
               <div className="form-section-title">השוואת תמונות לפי חדר</div>
