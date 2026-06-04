@@ -168,7 +168,7 @@
 
     .header-brand { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
 
-    .app-logo { height: 38px; width: auto; object-fit: contain; flex-shrink: 0; cursor: pointer; }
+    .app-logo { height: 36px; width: auto; display: block; visibility: visible; opacity: 1; object-fit: contain; flex-shrink: 0; cursor: pointer; }
 
     .header-nav { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
 
@@ -222,7 +222,7 @@
 
     @media (max-width: 480px) {
       .app-header { padding-top: 0; padding-bottom: 0; padding-right: 16px; padding-left: 16px; height: 64px; }
-      .app-logo { height: 32px; flex-shrink: 0; }
+      .app-logo { height: 32px; width: auto; display: block; visibility: visible; opacity: 1; flex-shrink: 0; }
     }
 
     /* ── Home ── */
@@ -1159,8 +1159,8 @@
     return (
       <header className="app-header">
         <div className="header-brand">
-          <img src="Dirot2.png" className="app-logo" alt="Dirot"
-            onError={e => { e.target.style.display = 'none'; }}
+          <img src="./Dirot2.png" className="app-logo" alt="Dirot"
+            style={{ height: '36px', width: 'auto', display: 'block', visibility: 'visible', opacity: 1 }}
             onClick={onHome} />
           {title && <span className="page-title">{title}</span>}
         </div>
