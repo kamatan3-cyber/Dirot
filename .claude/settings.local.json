@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName })"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName })",
+      "Bash(git *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(npx --yes playwright --version 2>&1 | Select-Object -First 3)"
     ]
   }
 }
