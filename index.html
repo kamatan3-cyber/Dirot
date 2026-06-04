@@ -834,6 +834,7 @@
       background: var(--bg); text-align: center; outline: none; transition: border-color 0.12s;
     }
     .settings-input:focus { border-color: var(--text); }
+    .settings-input.range-linked { border-color: var(--accent); }
     .settings-pct { font-size: 14px; color: var(--text-tertiary); width: 16px; }
     .settings-total { font-size: 15px; font-weight: 600; margin-top: 20px; text-align: center; }
     .settings-total.ok { color: var(--green); }
@@ -973,9 +974,16 @@
   const { useState, useEffect, useRef } = React;
 
   // ── Constants ──────────────────────────────────────────────────
-  const DEFAULT_WEIGHTS     = { roommatesQuality: 35, roomAvg: 35, location: 20, roommatesCount: 10 };
-  const DEFAULT_VFM_WEIGHTS = { aptScore: 50, price: 50 };
-  const DEFAULT_CNT_SCORES  = { 1: 5, 2: 4, 3: 5, 4: 3 };
+  const DEFAULT_WEIGHTS      = { roommatesQuality: 35, roomAvg: 35, location: 20, roommatesCount: 10 };
+  const DEFAULT_VFM_WEIGHTS  = { aptScore: 50, price: 50 };
+  const DEFAULT_CNT_SCORES   = { 1: 5, 2: 4, 3: 5, 4: 3 };
+  const DEFAULT_PRICE_RANGES = [
+    { score: 5, min: 900,  max: 1100 },
+    { score: 4, min: 1101, max: 1300 },
+    { score: 3, min: 1301, max: 1600 },
+    { score: 2, min: 1601, max: 1800 },
+    { score: 1, min: 1801, max: 2100 },
+  ];
 
   const ROOM_TAGS = [
     { value: '',         label: 'כללי' },
@@ -1002,20 +1010,17 @@
     );
   }
 
-  function calcPriceScore(apt) {
+  function calcPriceScore(apt, priceRanges) {
     const p = +(apt.price) || 0;
     if (p <= 0) return null;
-    if (p < 900 || p > 2100) return null;
-    if (p <= 1100) return 5;
-    if (p <= 1300) return 4;
-    if (p <= 1600) return 3;
-    if (p <= 1800) return 2;
-    return 1;
+    const ranges = priceRanges || DEFAULT_PRICE_RANGES;
+    const match = ranges.find(r => p >= +(r.min) && p <= +(r.max));
+    return match ? match.score : null;
   }
 
-  function calcVfM(apt, allApts, weights, vfmW, cntScores) {
+  function calcVfM(apt, allApts, weights, vfmW, cntScores, priceRanges) {
     const aptScore   = calcScore(apt, weights, cntScores);
-    const priceScore = calcPriceScore(apt);
+    const priceScore = calcPriceScore(apt, priceRanges);
     if (priceScore === null) return aptScore;
     const vw    = vfmW || DEFAULT_VFM_WEIGHTS;
     const total = vw.aptScore + vw.price;
@@ -1110,11 +1115,14 @@
     try {
       const stored = JSON.parse(localStorage.getItem('apt-settings') || '{}');
       return {
-        weights:    { ...DEFAULT_WEIGHTS,    ...(stored.weights    || {}) },
-        vfmWeights: { ...DEFAULT_VFM_WEIGHTS,...(stored.vfmWeights || {}) },
-        cntScores:  { ...DEFAULT_CNT_SCORES, ...(stored.cntScores  || {}) },
+        weights:     { ...DEFAULT_WEIGHTS,    ...(stored.weights    || {}) },
+        vfmWeights:  { ...DEFAULT_VFM_WEIGHTS,...(stored.vfmWeights || {}) },
+        cntScores:   { ...DEFAULT_CNT_SCORES, ...(stored.cntScores  || {}) },
+        priceRanges: stored.priceRanges
+          ? stored.priceRanges.map((r, i) => ({ ...DEFAULT_PRICE_RANGES[i], ...r }))
+          : DEFAULT_PRICE_RANGES.map(r => ({ ...r })),
       };
-    } catch { return { weights: { ...DEFAULT_WEIGHTS }, vfmWeights: { ...DEFAULT_VFM_WEIGHTS }, cntScores: { ...DEFAULT_CNT_SCORES } }; }
+    } catch { return { weights: { ...DEFAULT_WEIGHTS }, vfmWeights: { ...DEFAULT_VFM_WEIGHTS }, cntScores: { ...DEFAULT_CNT_SCORES }, priceRanges: DEFAULT_PRICE_RANGES.map(r => ({ ...r })) }; }
   }
 
   function saveSettings(s) { localStorage.setItem('apt-settings', JSON.stringify(s)); }
@@ -1249,7 +1257,7 @@
   }
 
   // ── ApartmentForm ─────────────────────────────────────────────
-  function ApartmentForm({ initial, onSave, onDelete }) {
+  function ApartmentForm({ initial, onSave, onDelete, priceRanges }) {
     const fileRef = useRef(null);
     const [aptName,    setAptName]   = useState(initial?.name      || '');
     const [city,       setCity]      = useState(initial?.city      || '');
@@ -1273,7 +1281,10 @@
     const [visitDate,  setVisitDate] = useState(initial?.visitDate || '');
 
     const priceNum = +(price) || 0;
-    const priceOutOfRange = priceNum > 0 && (priceNum < 900 || priceNum > 2100);
+    const _ranges = priceRanges || DEFAULT_PRICE_RANGES;
+    const priceOutOfRange = priceNum > 0 && !_ranges.some(r => priceNum >= +(r.min) && priceNum <= +(r.max));
+    const priceRangeMin = Math.min(..._ranges.map(r => +(r.min)));
+    const priceRangeMax = Math.max(..._ranges.map(r => +(r.max)));
 
     async function handleFiles(e) {
       const files = Array.from(e.target.files);
@@ -1339,7 +1350,7 @@
               </div>
               {priceOutOfRange && (
                 <div className="price-warning">
-                  המחיר מחוץ לטווח ₪900–₪2,100. ציון מחיר לא יחושב.
+                  המחיר מחוץ לטווח ₪{priceRangeMin.toLocaleString()}–₪{priceRangeMax.toLocaleString()}. ציון מחיר לא יחושב.
                 </div>
               )}
             </div>
@@ -1497,7 +1508,7 @@
             if (data && data.length > 0) {
               const { lat, lon } = data[0];
               const score = calcScore(apt, weights, cntScores);
-              const vfm   = calcVfM(apt, apts, weights, vfmWeights, cntScores);
+              const vfm   = calcVfM(apt, apts, weights, vfmWeights, cntScores, priceRanges);
               L.marker([+lat, +lon]).addTo(map)
                 .bindPopup(`<b>${apt.name || fullAddress(apt)}</b><br>ציון: ${score.toFixed(2)} | ערך לכסף: ${vfm.toFixed(2)}`);
             }
@@ -1564,9 +1575,22 @@
   // ── SettingsScreen ────────────────────────────────────────────
   function SettingsScreen({ settings, onSave, onBack, navDir, onHome, menuItems }) {
     const { dark, toggle: toggleDark } = React.useContext(DarkModeContext);
-    const [w,   setW]   = useState({ ...settings.weights });
-    const [vfm, setVfm] = useState({ ...settings.vfmWeights });
-    const [cnt, setCnt] = useState({ ...settings.cntScores });
+    const [w,      setW]      = useState({ ...settings.weights });
+    const [vfm,    setVfm]    = useState({ ...settings.vfmWeights });
+    const [cnt,    setCnt]    = useState({ ...settings.cntScores });
+    const [ranges, setRanges] = useState(settings.priceRanges.map(r => ({ ...r })));
+
+    function updateRange(i, field, val) {
+      const n = val === '' ? '' : +(val);
+      setRanges(prev => {
+        const next = prev.map((r, idx) => idx === i ? { ...r, [field]: n } : { ...r });
+        if (n !== '' && !isNaN(n)) {
+          if (field === 'max' && i + 1 < next.length) next[i + 1] = { ...next[i + 1], min: n + 1 };
+          if (field === 'min' && i > 0)               next[i - 1] = { ...next[i - 1], max: n - 1 };
+        }
+        return next;
+      });
+    }
 
     const wTotal   = Object.values(w).reduce((s, v) => s + (+v || 0), 0);
     const vfmTotal = (+vfm.aptScore || 0) + (+vfm.price || 0);
@@ -1652,12 +1676,37 @@
             ))}
           </div>
 
+          <div className="settings-section">
+            <div className="form-section-title">טווחי מחיר לציון</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 10, lineHeight: 1.5 }}>
+              הטווחים רציפים — שינוי מקסימום מעדכן אוטומטית את מינימום הרמה הבאה, ולהיפך.
+              גבולות מקושרים מסומנים בכחול.
+            </div>
+            {ranges.map((r, i) => (
+              <div key={r.score} className="settings-row">
+                <span className="settings-label">ציון {r.score}</span>
+                <span className="settings-pct">₪</span>
+                <input
+                  className={'settings-input' + (i > 0 ? ' range-linked' : '')}
+                  type="number" min="0"
+                  value={r.min}
+                  onChange={e => updateRange(i, 'min', e.target.value)} />
+                <span className="settings-pct" style={{ width: 'auto' }}>–</span>
+                <input
+                  className={'settings-input' + (i < ranges.length - 1 ? ' range-linked' : '')}
+                  type="number" min="0"
+                  value={r.max}
+                  onChange={e => updateRange(i, 'max', e.target.value)} />
+              </div>
+            ))}
+          </div>
+
           <button className="settings-save-btn" disabled={!canSave}
-            onClick={() => onSave({ weights: w, vfmWeights: vfm, cntScores: cnt })}>
+            onClick={() => onSave({ weights: w, vfmWeights: vfm, cntScores: cnt, priceRanges: ranges })}>
             שמור הגדרות
           </button>
           <button className="settings-reset-btn"
-            onClick={() => { setW({ ...DEFAULT_WEIGHTS }); setVfm({ ...DEFAULT_VFM_WEIGHTS }); setCnt({ ...DEFAULT_CNT_SCORES }); }}>
+            onClick={() => { setW({ ...DEFAULT_WEIGHTS }); setVfm({ ...DEFAULT_VFM_WEIGHTS }); setCnt({ ...DEFAULT_CNT_SCORES }); setRanges(DEFAULT_PRICE_RANGES.map(r => ({ ...r }))); }}>
             איפוס לברירת מחדל
           </button>
         </div>
@@ -1735,7 +1784,7 @@
 
     useEffect(() => { saveApts(apts); }, [apts]);
 
-    const { weights, vfmWeights, cntScores } = settings;
+    const { weights, vfmWeights, cntScores, priceRanges } = settings;
 
     function nav(s, dir = 'forward') {
       setNavDir(dir);
@@ -1784,13 +1833,13 @@
       { label: 'הגדרות',       onClick: () => nav('settings') },
     ];
 
-    const byVfM     = [...apts].sort((a, b) => calcVfM(b, apts, weights, vfmWeights, cntScores) - calcVfM(a, apts, weights, vfmWeights, cntScores));
+    const byVfM     = [...apts].sort((a, b) => calcVfM(b, apts, weights, vfmWeights, cntScores, priceRanges) - calcVfM(a, apts, weights, vfmWeights, cntScores, priceRanges));
     const allRanked = [...apts].sort((a, b) => calcScore(b, weights, cntScores) - calcScore(a, weights, cntScores));
 
     function getSortedApts() {
       const list = [...apts].filter(a => !favFilter || a.favorite);
       if (sortMode === 'score') return list.sort((a, b) => calcScore(b, weights, cntScores) - calcScore(a, weights, cntScores));
-      if (sortMode === 'vfm')   return list.sort((a, b) => calcVfM(b, apts, weights, vfmWeights, cntScores) - calcVfM(a, apts, weights, vfmWeights, cntScores));
+      if (sortMode === 'vfm')   return list.sort((a, b) => calcVfM(b, apts, weights, vfmWeights, cntScores, priceRanges) - calcVfM(a, apts, weights, vfmWeights, cntScores, priceRanges));
       if (sortMode === 'price') return list.sort((a, b) => {
         const pa = +(a.price) || Infinity, pb = +(b.price) || Infinity;
         return pa - pb;
@@ -1806,7 +1855,7 @@
 
     function ScoreChips({ apt }) {
       const s   = calcScore(apt, weights, cntScores);
-      const vfm = calcVfM(apt, apts, weights, vfmWeights, cntScores);
+      const vfm = calcVfM(apt, apts, weights, vfmWeights, cntScores, priceRanges);
       return (
         <div className="apt-scores">
           <div className="score-chip">
@@ -1912,7 +1961,7 @@
       return (
         <div key={navKey} className={'app slide-' + navDir}>
           <AppHeader title="הוספת דירה חדשה" onBack={goBack} onHome={() => nav('home', 'back')} menuItems={menuItems} />
-          <ApartmentForm onSave={saveNew} />
+          <ApartmentForm onSave={saveNew} priceRanges={priceRanges} />
           {modals}
         </div>
       );
@@ -1923,7 +1972,7 @@
       return (
         <div key={navKey} className={'app slide-' + navDir}>
           <AppHeader title="עריכת דירה" onBack={goBack} onHome={() => nav('home', 'back')} menuItems={menuItems} />
-          <ApartmentForm initial={editing} onSave={saveEdit} onDelete={() => {
+          <ApartmentForm initial={editing} onSave={saveEdit} priceRanges={priceRanges} onDelete={() => {
             if (window.confirm('האם למחוק את הדירה? פעולה זו בלתי הפיכה.')) {
               setApts(prev => prev.filter(a => a.id !== editing.id));
               setEditing(null);
@@ -1939,8 +1988,8 @@
     if (screen === 'profile' && profileApt) {
       const apt        = apts.find(a => a.id === profileApt.id) || profileApt;
       const score      = calcScore(apt, weights, cntScores);
-      const vfm        = calcVfM(apt, apts, weights, vfmWeights, cntScores);
-      const priceScore = calcPriceScore(apt);
+      const vfm        = calcVfM(apt, apts, weights, vfmWeights, cntScores, priceRanges);
+      const priceScore = calcPriceScore(apt, priceRanges);
 
       return (
         <div key={navKey} className={'app slide-' + navDir}>
@@ -2121,7 +2170,7 @@
               : <div className="apt-list">
                   {sorted.map((apt, i) => {
                     const score = calcScore(apt, weights, cntScores);
-                    const vfm   = calcVfM(apt, apts, weights, vfmWeights, cntScores);
+                    const vfm   = calcVfM(apt, apts, weights, vfmWeights, cntScores, priceRanges);
                     return (
                       <div className={'rank-card stagger-item ' + borderClass(score)} key={apt.id}
                         style={{ cursor: 'pointer', '--stagger-delay': `${Math.min(i, 7) * 55}ms` }}
@@ -2254,8 +2303,8 @@
       const aptA = apts.find(a => a.id === idA);
       const aptB = apts.find(a => a.id === idB);
       const scoreA = calcScore(aptA, weights, cntScores), scoreB = calcScore(aptB, weights, cntScores);
-      const vfmA   = calcVfM(aptA, apts, weights, vfmWeights, cntScores);
-      const vfmB   = calcVfM(aptB, apts, weights, vfmWeights, cntScores);
+      const vfmA   = calcVfM(aptA, apts, weights, vfmWeights, cntScores, priceRanges);
+      const vfmB   = calcVfM(aptB, apts, weights, vfmWeights, cntScores, priceRanges);
 
       function CCol({ apt, score, vfm, other, otherScore, otherVfm }) {
         const cs = cntScores || DEFAULT_CNT_SCORES;
