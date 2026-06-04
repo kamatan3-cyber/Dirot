@@ -186,7 +186,11 @@
     .icon-btn.plus { font-size: 22px; font-weight: 300; }
     .icon-btn.back-arrow { font-size: 16px; }
 
-    .hamburger-wrap { position: relative; }
+    .hamburger-wrap { position: relative; flex-shrink: 0; }
+
+    @media (max-width: 768px) {
+      .hamburger-wrap .icon-btn { min-width: 44px; height: 44px; }
+    }
 
     .dropdown-menu {
       position: absolute;
