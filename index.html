@@ -588,10 +588,11 @@
 
     .rank-name { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.4; }
 
-    .apt-scores-inline { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .apt-scores-inline { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; }
 
+    .apt-score-block { display: flex; flex-direction: column; align-items: center; gap: 1px; }
     .apt-score-val { font-family: var(--font-heading); font-size: 13px; font-weight: 800; line-height: 1; }
-    .apt-score-sep { color: var(--text-tertiary); font-size: 10px; }
+    .apt-score-lbl { font-size: 11px; color: var(--text-tertiary); line-height: 1; }
 
     .rank-addr { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; line-height: 1.4; }
     .rank-addr-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2103,9 +2104,14 @@
                               {apt.favorite && <span className="fav-badge">מועדף</span>}
                               <span className="rank-name">{apt.name || fullAddress(apt)}</span>
                               <div className="apt-scores-inline">
-                                <span className={'apt-score-val ' + scoreClass(score)} title="ציון">{score.toFixed(1)}</span>
-                                <span className="apt-score-sep">·</span>
-                                <span className={'apt-score-val ' + scoreClass(vfm)} style={{ fontSize: 11 }} title="ערך לכסף">{vfm.toFixed(1)}</span>
+                                <div className="apt-score-block">
+                                  <span className={'apt-score-val ' + scoreClass(score)}>{score.toFixed(1)}</span>
+                                  <span className="apt-score-lbl">ציון</span>
+                                </div>
+                                <div className="apt-score-block">
+                                  <span className={'apt-score-val ' + scoreClass(vfm)}>{vfm.toFixed(1)}</span>
+                                  <span className="apt-score-lbl">ערך לכסף</span>
+                                </div>
                               </div>
                             </div>
                             {(apt.street || apt.city || apt.address) && (
