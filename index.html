@@ -604,6 +604,7 @@
     .rank-addr-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .rank-meta { font-size: 12px; color: var(--text-tertiary); }
+    .rank-status { color: var(--text-secondary); font-style: italic; }
 
     .rank-pos-sm {
       font-size: 13px; font-weight: 800; color: var(--text-tertiary);
@@ -1097,7 +1098,7 @@
     try {
       const raw = JSON.parse(localStorage.getItem('apts') || '[]');
       return raw.map(a => {
-        const apt = { name: '', price: '', favorite: false, notes: '', visitDate: '', history: [], imageTags: [], city: '', street: '', ...a };
+        const apt = { name: '', price: '', favorite: false, notes: '', visitDate: '', history: [], imageTags: [], city: '', street: '', contactName: '', contactPhone: '', status: '', ...a };
         if (!apt.city && !apt.street && apt.address) apt.street = apt.address;
         const imgLen = (apt.images || []).length;
         while (apt.imageTags.length < imgLen) apt.imageTags.push('');
@@ -1277,8 +1278,11 @@
     const [location,   setLocation]  = useState(initial?.location  || 0);
     const [rCount,     setRCount]    = useState(initial?.roommatesCount   || 3);
     const [rQual,      setRQual]     = useState(initial?.roommatesQuality || 0);
-    const [notes,      setNotes]     = useState(initial?.notes     || '');
-    const [visitDate,  setVisitDate] = useState(initial?.visitDate || '');
+    const [notes,        setNotes]        = useState(initial?.notes        || '');
+    const [visitDate,    setVisitDate]    = useState(initial?.visitDate    || '');
+    const [contactName,  setContactName]  = useState(initial?.contactName  || '');
+    const [contactPhone, setContactPhone] = useState(initial?.contactPhone || '');
+    const [status,       setStatus]       = useState(initial?.status       || '');
 
     const priceNum = +(price) || 0;
     const _ranges = priceRanges || DEFAULT_PRICE_RANGES;
@@ -1317,7 +1321,9 @@
       }
       onSave({ name: aptName.trim(), city: city.trim(), street: street.trim(), price: +(price) || 0,
                images, imageTags, profIdx, room, living, kitchen, location,
-               roommatesCount: rCount, roommatesQuality: rQual, notes, visitDate });
+               roommatesCount: rCount, roommatesQuality: rQual, notes, visitDate,
+               contactName: contactName.trim(), contactPhone: contactPhone.trim(),
+               status: status.trim() });
     }
 
     return (
@@ -1361,9 +1367,26 @@
             </div>
           </div>
 
+          <div className="form-row">
+            <div>
+              <label className="form-label">שם איש קשר</label>
+              <input className="form-input" type="text" placeholder="שם המשכיר / הדייר"
+                value={contactName} onChange={e => setContactName(e.target.value)} />
+            </div>
+            <div>
+              <label className="form-label">מספר טלפון</label>
+              <input className="form-input" type="tel" placeholder="050-0000000"
+                value={contactPhone} onChange={e => setContactPhone(e.target.value)} />
+            </div>
+          </div>
+
           <label className="form-label">הערות</label>
           <textarea className="form-textarea" placeholder="רשומות, מחשבות, דברים לבדוק..."
             value={notes} onChange={e => setNotes(e.target.value)} />
+
+          <label className="form-label" style={{ marginTop: 14 }}>סטטוס</label>
+          <textarea className="form-textarea" placeholder='לדוגמה: "ממתין לתשובה", "ביקור מתוכנן", "לא רלוונטי"'
+            value={status} onChange={e => setStatus(e.target.value)} />
         </div>
 
         <div className="form-section stagger-item" style={{ '--stagger-delay': '65ms' }}>
@@ -2063,6 +2086,20 @@
                     <span className="profile-detail-val">{apt.visitDate}</span>
                   </div>
                 )}
+                {apt.contactName && (
+                  <div className="profile-detail-row">
+                    <span className="profile-detail-label">איש קשר</span>
+                    <span className="profile-detail-val">{apt.contactName}</span>
+                  </div>
+                )}
+                {apt.contactPhone && (
+                  <div className="profile-detail-row">
+                    <span className="profile-detail-label">טלפון</span>
+                    <span className="profile-detail-val">
+                      <a href={`tel:${apt.contactPhone}`} style={{ color: 'inherit', textDecoration: 'none' }}>{apt.contactPhone}</a>
+                    </span>
+                  </div>
+                )}
                 <div className="profile-detail-row">
                   <span className="profile-detail-label">מספר דיירים</span>
                   <span className="profile-detail-val">{apt.roommatesCount}</span>
@@ -2070,6 +2107,14 @@
                 {apt.notes && (
                   <div style={{ marginTop: 10, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                     {apt.notes}
+                  </div>
+                )}
+                {apt.status && (
+                  <div style={{ marginTop: 10 }}>
+                    <span className="profile-detail-label" style={{ display: 'block', marginBottom: 4 }}>סטטוס</span>
+                    <div style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                      {apt.status}
+                    </div>
                   </div>
                 )}
               </div>
@@ -2198,6 +2243,16 @@
                                 {apt.price > 0 ? fmtPrice(apt.price) + (apt.visitDate ? ' · ' : '') : ''}
                                 {apt.visitDate ? `ביקור: ${apt.visitDate}` : ''}
                               </div>
+                            )}
+                            {(apt.contactName || apt.contactPhone) && (
+                              <div className="rank-meta">
+                                {apt.contactName ? apt.contactName : ''}
+                                {apt.contactName && apt.contactPhone ? ' · ' : ''}
+                                {apt.contactPhone ? apt.contactPhone : ''}
+                              </div>
+                            )}
+                            {apt.status && (
+                              <div className="rank-meta rank-status">{apt.status}</div>
                             )}
                           </div>
                           <div className="apt-scores-inline">
