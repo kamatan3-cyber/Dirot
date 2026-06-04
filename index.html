@@ -2228,6 +2228,8 @@
         const cs = cntScores || DEFAULT_CNT_SCORES;
         const cntScore = cs[apt.roommatesCount] ?? 3;
         const otherCnt = cs[other.roommatesCount] ?? 3;
+        const WIN = { color: '#2d7a2d', fontWeight: 700 };
+        console.log('[CCol]', apt.name, { score, otherScore, vfm, otherVfm, cntScore, otherCnt });
         return (
           <div className="compare-col">
             {apt.images?.length
@@ -2243,29 +2245,30 @@
                   {!apt.street && !apt.city && apt.address && <div>{apt.address}</div>}
                 </div>
               )}
-              <div className={'compare-score-badge ' + (score > otherScore ? 'score-green' : '')}>
+              <div className="compare-score-badge" style={score > otherScore ? WIN : {}}>
                 ציון: {score.toFixed(2)} / 5
               </div>
-              <div className={'compare-score-badge ' + (vfm > otherVfm ? 'score-green' : '')} style={{ fontSize: 15, display: 'block', marginBottom: 12 }}>
+              <div className="compare-score-badge" style={{ fontSize: 15, display: 'block', marginBottom: 12, ...(vfm > otherVfm ? WIN : {}) }}>
                 ערך לכסף: {vfm.toFixed(2)} / 5
               </div>
               {[['room','חדר'],['living','סלון + מרפסת'],['kitchen','מטבח'],['location','מיקום'],['roommatesQuality','איכות דיירים']].map(([f, lbl]) => {
                 const mine = apt[f] || 0, theirs = other[f] || 0;
+                console.log('[CCol param]', apt.name, lbl, mine, 'vs', theirs);
                 return (
                   <div key={f} className="compare-param-row">
                     <span className="compare-param-label">{lbl}</span>
-                    <span className={'compare-param-val' + (mine > theirs ? ' best' : '')}>{mine}/5</span>
+                    <span className="compare-param-val" style={mine > theirs ? WIN : {}}>{mine}/5</span>
                   </div>
                 );
               })}
               <div className="compare-param-row">
                 <span className="compare-param-label">מספר דיירים</span>
-                <span className={'compare-param-val' + (cntScore > otherCnt ? ' best' : '')}>{apt.roommatesCount}</span>
+                <span className="compare-param-val" style={cntScore > otherCnt ? WIN : {}}>{apt.roommatesCount}</span>
               </div>
               {(apt.price > 0 || other.price > 0) && (
                 <div className="compare-param-row">
                   <span className="compare-param-label">מחיר</span>
-                  <span className={'compare-param-val' + (apt.price > 0 && (other.price <= 0 || apt.price < other.price) ? ' best' : '')}>
+                  <span className="compare-param-val" style={apt.price > 0 && (other.price <= 0 || apt.price < other.price) ? WIN : {}}>
                     {apt.price > 0 ? fmtPrice(apt.price) : '-'}
                   </span>
                 </div>
@@ -2289,16 +2292,25 @@
         const cntA = cs[aptA.roommatesCount] ?? 3;
         const cntB = cs[aptB.roommatesCount] ?? 3;
         const showPrice = aptA.price > 0 || aptB.price > 0;
+        const WIN = { color: '#2d7a2d', fontWeight: 700 };
+        console.log('[CompareMobile] scores:', {
+          scoreA, scoreB, vfmA, vfmB, cntA, cntB,
+          room: [aptA.room||0, aptB.room||0],
+          living: [aptA.living||0, aptB.living||0],
+          kitchen: [aptA.kitchen||0, aptB.kitchen||0],
+          location: [aptA.location||0, aptB.location||0],
+          roommatesQuality: [aptA.roommatesQuality||0, aptB.roommatesQuality||0],
+        });
         const rows = [
-          { label: 'ציון סופי',      a: scoreA.toFixed(2),              b: scoreB.toFixed(2),              aClass: scoreA > scoreB ? 'score-green' : '',                                    bClass: scoreB > scoreA ? 'score-green' : '',                                    large: true },
-          { label: 'ערך לכסף',       a: vfmA.toFixed(2),                b: vfmB.toFixed(2),                aClass: vfmA > vfmB ? 'score-green' : '',                                        bClass: vfmB > vfmA ? 'score-green' : '' },
-          ...(showPrice ? [{ label: 'מחיר', a: aptA.price > 0 ? fmtPrice(aptA.price) : '–', b: aptB.price > 0 ? fmtPrice(aptB.price) : '–', aClass: aptA.price > 0 && (aptB.price <= 0 || aptA.price < aptB.price) ? 'score-green' : '', bClass: aptB.price > 0 && (aptA.price <= 0 || aptB.price < aptA.price) ? 'score-green' : '' }] : []),
-          { label: 'חדר',            a: (aptA.room||0)+'/5',            b: (aptB.room||0)+'/5',            aClass: (aptA.room||0)>(aptB.room||0)?'score-green':'',            bClass: (aptB.room||0)>(aptA.room||0)?'score-green':'' },
-          { label: 'סלון + מרפסת',   a: (aptA.living||0)+'/5',          b: (aptB.living||0)+'/5',          aClass: (aptA.living||0)>(aptB.living||0)?'score-green':'',          bClass: (aptB.living||0)>(aptA.living||0)?'score-green':'' },
-          { label: 'מטבח',           a: (aptA.kitchen||0)+'/5',         b: (aptB.kitchen||0)+'/5',         aClass: (aptA.kitchen||0)>(aptB.kitchen||0)?'score-green':'',         bClass: (aptB.kitchen||0)>(aptA.kitchen||0)?'score-green':'' },
-          { label: 'מיקום',          a: (aptA.location||0)+'/5',        b: (aptB.location||0)+'/5',        aClass: (aptA.location||0)>(aptB.location||0)?'score-green':'',        bClass: (aptB.location||0)>(aptA.location||0)?'score-green':'' },
-          { label: 'איכות דיירים',   a: (aptA.roommatesQuality||0)+'/5',b: (aptB.roommatesQuality||0)+'/5',aClass: (aptA.roommatesQuality||0)>(aptB.roommatesQuality||0)?'score-green':'',bClass: (aptB.roommatesQuality||0)>(aptA.roommatesQuality||0)?'score-green':'' },
-          { label: 'מספר דיירים',    a: String(aptA.roommatesCount),    b: String(aptB.roommatesCount),    aClass: cntA>cntB?'score-green':'',                                             bClass: cntB>cntA?'score-green':'' },
+          { label: 'ציון סופי',    a: scoreA.toFixed(2),               b: scoreB.toFixed(2),               aWin: scoreA > scoreB,                                                          bWin: scoreB > scoreA,                                                          large: true },
+          { label: 'ערך לכסף',    a: vfmA.toFixed(2),                  b: vfmB.toFixed(2),                  aWin: vfmA > vfmB,                                                              bWin: vfmB > vfmA },
+          ...(showPrice ? [{ label: 'מחיר', a: aptA.price > 0 ? fmtPrice(aptA.price) : '–', b: aptB.price > 0 ? fmtPrice(aptB.price) : '–', aWin: aptA.price > 0 && (aptB.price <= 0 || aptA.price < aptB.price), bWin: aptB.price > 0 && (aptA.price <= 0 || aptB.price < aptA.price) }] : []),
+          { label: 'חדר',         a: (aptA.room||0)+'/5',              b: (aptB.room||0)+'/5',              aWin: (aptA.room||0)>(aptB.room||0),              bWin: (aptB.room||0)>(aptA.room||0) },
+          { label: 'סלון + מרפסת', a: (aptA.living||0)+'/5',           b: (aptB.living||0)+'/5',           aWin: (aptA.living||0)>(aptB.living||0),           bWin: (aptB.living||0)>(aptA.living||0) },
+          { label: 'מטבח',        a: (aptA.kitchen||0)+'/5',           b: (aptB.kitchen||0)+'/5',           aWin: (aptA.kitchen||0)>(aptB.kitchen||0),         bWin: (aptB.kitchen||0)>(aptA.kitchen||0) },
+          { label: 'מיקום',       a: (aptA.location||0)+'/5',          b: (aptB.location||0)+'/5',          aWin: (aptA.location||0)>(aptB.location||0),       bWin: (aptB.location||0)>(aptA.location||0) },
+          { label: 'איכות דיירים', a: (aptA.roommatesQuality||0)+'/5', b: (aptB.roommatesQuality||0)+'/5', aWin: (aptA.roommatesQuality||0)>(aptB.roommatesQuality||0), bWin: (aptB.roommatesQuality||0)>(aptA.roommatesQuality||0) },
+          { label: 'מספר דיירים', a: String(aptA.roommatesCount),      b: String(aptB.roommatesCount),      aWin: cntA>cntB,                                   bWin: cntB>cntA },
         ];
         return (
           <div className="compare-mobile-table">
@@ -2313,11 +2325,11 @@
                 <span className="cmt-apt-name-text">{aptB.name || fullAddress(aptB)}</span>
               </div>
             </div>
-            {rows.map(({ label, a, b, aClass, bClass, large }) => (
+            {rows.map(({ label, a, b, aWin, bWin, large }) => (
               <div key={label} className="cmt-row">
                 <div className="cmt-label">{label}</div>
-                <div className={'cmt-val' + (large?' cmt-large':'') + (aClass?' '+aClass:'')}>{a}</div>
-                <div className={'cmt-val' + (large?' cmt-large':'') + (bClass?' '+bClass:'')}>{b}</div>
+                <div className={'cmt-val' + (large ? ' cmt-large' : '')} style={aWin ? WIN : {}}>{a}</div>
+                <div className={'cmt-val' + (large ? ' cmt-large' : '')} style={bWin ? WIN : {}}>{b}</div>
               </div>
             ))}
           </div>
