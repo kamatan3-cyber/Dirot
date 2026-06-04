@@ -68,7 +68,6 @@
       direction: rtl;
       -webkit-font-smoothing: antialiased;
       line-height: 1.6;
-      overflow-x: hidden;
     }
 
     .app { max-width: 900px; margin: 0 auto; min-height: 100vh; }
@@ -160,6 +159,9 @@
       align-items: center;
       justify-content: space-between;
       direction: ltr;
+      overflow: visible;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .header-brand { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -216,7 +218,7 @@
     .dropdown-item:hover { background: var(--bg); opacity: 1; }
 
     @media (max-width: 480px) {
-      .app-header { padding: 0 16px; height: 64px; }
+      .app-header { padding-top: 0; padding-bottom: 0; padding-right: 16px; padding-left: 16px; height: 64px; }
       .app-logo { height: 30px; }
     }
 
