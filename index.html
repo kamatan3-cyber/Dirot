@@ -1159,9 +1159,19 @@
     return (
       <header className="app-header">
         <div className="header-brand">
-          <img src="./Dirot2.png" className="app-logo" alt="Dirot"
+          <img src="Dirot2.png" className="app-logo" alt="Dirot"
             style={{ height: '36px', width: 'auto', display: 'block', visibility: 'visible', opacity: 1 }}
-            onClick={onHome} />
+            onClick={onHome}
+            onLoad={(e) => console.log('[Logo] loaded:', e.target.src)}
+            onError={(e) => {
+              console.error('[Logo] failed to load:', e.target.src);
+              const fallbacks = ['Dirot2.png', '/Dirot2.png', './Dirot2.png'];
+              const tried = e.target.dataset.tried ? e.target.dataset.tried.split(',') : [];
+              tried.push(e.target.src);
+              e.target.dataset.tried = tried.join(',');
+              const next = fallbacks.find(f => !tried.some(t => t === f || t.endsWith('/' + f)));
+              if (next) e.target.src = next;
+            }} />
           {title && <span className="page-title">{title}</span>}
         </div>
         <div className="header-nav">
