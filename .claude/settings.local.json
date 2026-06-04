@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\" -Recurse -Force | Select-Object FullName | ForEach-Object { $_.FullName })"
+    ]
+  }
+}
