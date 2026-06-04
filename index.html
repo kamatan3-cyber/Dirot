@@ -1547,7 +1547,7 @@
   }
 
   // ── SettingsScreen ────────────────────────────────────────────
-  function SettingsScreen({ settings, onSave, onBack, navDir, onHome }) {
+  function SettingsScreen({ settings, onSave, onBack, navDir, onHome, menuItems }) {
     const [w,   setW]   = useState({ ...settings.weights });
     const [vfm, setVfm] = useState({ ...settings.vfmWeights });
     const [cnt, setCnt] = useState({ ...settings.cntScores });
@@ -1574,7 +1574,7 @@
 
     return (
       <div className={'app slide-' + (navDir || 'forward')}>
-        <AppHeader title="הגדרות" onBack={onBack} onHome={onHome} />
+        <AppHeader title="הגדרות" onBack={onBack} onHome={onHome} menuItems={menuItems} />
         <div className="settings-screen screen">
           <div className="settings-section">
             <div className="form-section-title">משקל פרמטרים — ציון הדירה</div>
@@ -1884,7 +1884,7 @@
     if (screen === 'add') {
       return (
         <div key={navKey} className={'app slide-' + navDir}>
-          <AppHeader title="הוספת דירה חדשה" onBack={goBack} onHome={() => nav('home', 'back')} />
+          <AppHeader title="הוספת דירה חדשה" onBack={goBack} onHome={() => nav('home', 'back')} menuItems={menuItems} />
           <ApartmentForm onSave={saveNew} />
           {modals}
         </div>
@@ -1895,7 +1895,7 @@
     if (screen === 'edit-form') {
       return (
         <div key={navKey} className={'app slide-' + navDir}>
-          <AppHeader title="עריכת דירה" onBack={goBack} onHome={() => nav('home', 'back')} />
+          <AppHeader title="עריכת דירה" onBack={goBack} onHome={() => nav('home', 'back')} menuItems={menuItems} />
           <ApartmentForm initial={editing} onSave={saveEdit} />
           {modals}
         </div>
@@ -1911,7 +1911,7 @@
 
       return (
         <div key={navKey} className={'app slide-' + navDir}>
-          <AppHeader title={apt.name || fullAddress(apt)} onBack={goBack} onHome={() => nav('home', 'back')} />
+          <AppHeader title={apt.name || fullAddress(apt)} onBack={goBack} onHome={() => nav('home', 'back')} menuItems={menuItems} />
           <div className="screen profile-screen">
             {apt.images?.length ? (
               <div className="profile-hero">
@@ -2053,7 +2053,7 @@
       const sorted = getSortedApts();
       return (
         <div key={navKey} className={'app slide-' + navDir}>
-          <AppHeader title="כל הדירות" onBack={goBack} onAdd={() => nav('add')} onHome={() => nav('home', 'back')} />
+          <AppHeader title="כל הדירות" onBack={goBack} onAdd={() => nav('add')} onHome={() => nav('home', 'back')} menuItems={menuItems} />
           <div className="screen">
             <div className="list-toolbar">
               <button className={'toolbar-btn' + (favFilter ? ' active' : '')}
@@ -2167,7 +2167,7 @@
       if (!compareView) {
         return (
           <div key={navKey} className={'app slide-' + navDir}>
-            <AppHeader title="השוואת דירות" onBack={goBack} onHome={() => nav('home', 'back')} />
+            <AppHeader title="השוואת דירות" onBack={goBack} onHome={() => nav('home', 'back')} menuItems={menuItems} />
             <div className="compare-screen screen">
               {apts.length < 2
                 ? <div className="empty">
@@ -2338,7 +2338,7 @@
 
       return (
         <div key={navKey + '-cv'} className={'app slide-forward'}>
-          <AppHeader title="השוואת דירות" onBack={() => setCompareView(false)} onHome={() => nav('home', 'back')} />
+          <AppHeader title="השוואת דירות" onBack={() => setCompareView(false)} onHome={() => nav('home', 'back')} menuItems={menuItems} />
           <div className="compare-screen screen">
             <div className="compare-view compare-desktop-grid">
               <CCol apt={aptA} score={scoreA} vfm={vfmA} other={aptB} otherScore={scoreB} otherVfm={vfmB} />
@@ -2378,6 +2378,7 @@
         onBack={goBack}
         navDir={navDir}
         onHome={() => nav('home', 'back')}
+        menuItems={menuItems}
       />;
     }
 
