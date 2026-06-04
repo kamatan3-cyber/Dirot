@@ -5,7 +5,10 @@
       "Bash(git *)",
       "PowerShell(Get-Command *)",
       "PowerShell(npx --yes playwright --version 2>&1 | Select-Object -First 3)",
-      "PowerShell($bytes = [IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\Dirot2.png\"\\); [Convert]::ToBase64String\\($bytes\\))"
+      "PowerShell($bytes = [IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\Dirot2.png\"\\); [Convert]::ToBase64String\\($bytes\\))",
+      "Bash(certutil -encodehex \"Dirot3.png.png\" tmp_hex.txt)",
+      "Bash(python -c \"import base64; data=open\\('Dirot3.png.png','rb'\\).read\\(\\); print\\('data:image/png;base64,' + base64.b64encode\\(data\\).decode\\(\\)\\)\")",
+      "Bash(powershell -Command \"[Convert]::ToBase64String\\([IO.File]::ReadAllBytes\\('Dirot3.png.png'\\)\\)\")"
     ]
   }
 }
