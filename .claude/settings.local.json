@@ -8,7 +8,12 @@
       "PowerShell($bytes = [IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\Dirot2.png\"\\); [Convert]::ToBase64String\\($bytes\\))",
       "Bash(certutil -encodehex \"Dirot3.png.png\" tmp_hex.txt)",
       "Bash(python -c \"import base64; data=open\\('Dirot3.png.png','rb'\\).read\\(\\); print\\('data:image/png;base64,' + base64.b64encode\\(data\\).decode\\(\\)\\)\")",
-      "Bash(powershell -Command \"[Convert]::ToBase64String\\([IO.File]::ReadAllBytes\\('Dirot3.png.png'\\)\\)\")"
+      "Bash(powershell -Command \"[Convert]::ToBase64String\\([IO.File]::ReadAllBytes\\('Dirot3.png.png'\\)\\)\")",
+      "Bash(Get-Content *)",
+      "PowerShell($img2 = [Convert]::ToBase64String\\([System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\Dirot2.png\"\\)\\); Write-Output \"LENGTH2: $\\($img2.Length\\)\"; Write-Output $img2.Substring\\(0,50\\))",
+      "PowerShell($img3 = [Convert]::ToBase64String\\([System.IO.File]::ReadAllBytes\\(\"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\Dirot3.png.png\"\\)\\); Write-Output \"LENGTH3: $\\($img3.Length\\)\"; Write-Output $img3.Substring\\(0,50\\))",
+      "PowerShell($lines = Get-Content \"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\index.html\" -TotalCount 15; for \\($i=0; $i -lt $lines.Count; $i++\\) { Write-Output \"LINE $\\($i+1\\): $\\($lines[$i].Substring\\(0, [Math]::Min\\(80, $lines[$i].Length\\)\\)\\)\" })",
+      "PowerShell($lines = Get-Content \"C:\\\\Users\\\\kamat\\\\OneDrive\\\\מתן\\\\Claude code projects\\\\Dirot project\\\\index.html\" -TotalCount 30; for \\($i=0; $i -lt $lines.Count; $i++\\) { Write-Output \"LINE $\\($i+1\\): $\\($lines[$i].Substring\\(0, [Math]::Min\\(100, $lines[$i].Length\\)\\)\\)\" })"
     ]
   }
 }
