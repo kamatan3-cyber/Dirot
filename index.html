@@ -1027,10 +1027,11 @@
   ];
 
   const ROOM_TAGS = [
-    { value: '',         label: 'כללי' },
-    { value: 'bedroom',  label: 'חדר' },
-    { value: 'living',   label: 'סלון ומרפסת' },
-    { value: 'kitchen',  label: 'מטבח' },
+    { value: '',          label: 'כללי' },
+    { value: 'bedroom',   label: 'חדר' },
+    { value: 'living',    label: 'סלון ומרפסת' },
+    { value: 'kitchen',   label: 'מטבח' },
+    { value: 'bathroom',  label: 'שירותים / מקלחת' },
   ];
 
   // ── Utilities ──────────────────────────────────────────────────
@@ -1134,16 +1135,45 @@
     });
   }
 
+  const APT_DEFAULTS = {
+    name: '', price: '', favorite: false, notes: '', visitDate: '',
+    history: [], imageTags: [], images: [],
+    city: '', street: '',
+    contactName: '', contactPhone: '',
+    status: '', mamad: false,
+  };
+
+  function migrateApts(raw) {
+    let changed = false;
+    const migrated = raw.map(a => {
+      const apt = { ...a };
+      Object.entries(APT_DEFAULTS).forEach(([key, def]) => {
+        if (!(key in apt)) {
+          apt[key] = Array.isArray(def) ? [] : def;
+          changed = true;
+        }
+      });
+      if (!apt.city && !apt.street && apt.address) {
+        apt.street = apt.address;
+        changed = true;
+      }
+      const imgLen = (apt.images || []).length;
+      while (apt.imageTags.length < imgLen) {
+        apt.imageTags.push('');
+        changed = true;
+      }
+      return apt;
+    });
+    if (changed) {
+      try { localStorage.setItem('apts', JSON.stringify(migrated)); } catch {}
+    }
+    return migrated;
+  }
+
   function loadApts() {
     try {
       const raw = JSON.parse(localStorage.getItem('apts') || '[]');
-      return raw.map(a => {
-        const apt = { name: '', price: '', favorite: false, notes: '', visitDate: '', history: [], imageTags: [], city: '', street: '', contactName: '', contactPhone: '', status: '', mamad: false, ...a };
-        if (!apt.city && !apt.street && apt.address) apt.street = apt.address;
-        const imgLen = (apt.images || []).length;
-        while (apt.imageTags.length < imgLen) apt.imageTags.push('');
-        return apt;
-      });
+      return migrateApts(raw);
     } catch { return []; }
   }
 
