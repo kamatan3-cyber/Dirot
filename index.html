@@ -2330,10 +2330,9 @@
                                 {!apt.street && !apt.city && apt.address && <div className="rank-addr-line">{apt.address}</div>}
                               </div>
                             )}
-                            {(apt.price > 0 || apt.visitDate) && (
+                            {apt.price > 0 && (
                               <div className="rank-meta">
-                                {apt.price > 0 ? fmtPrice(apt.price) + (apt.visitDate ? ' · ' : '') : ''}
-                                {apt.visitDate ? `ביקור: ${apt.visitDate}` : ''}
+                                {fmtPrice(apt.price)}
                               </div>
                             )}
                             {(apt.contactName || apt.contactPhone) && (
